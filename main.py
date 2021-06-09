@@ -9,7 +9,7 @@ bot = discord.Client()
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    time = str(dt.datetime.utcnow().time()) + dt.timedelta(hours=5)[:-7]
+    time = str((dt.datetime.utcnow() + dt.timedelta(hours=5)).time())[:-7]
     user = f'**{str(member.display_name)}**'
 
     if before.channel is None:
