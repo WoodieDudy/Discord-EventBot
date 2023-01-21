@@ -1,19 +1,12 @@
 import datetime as dt
+import os
 
-import yaml
 import discord
 from discord.ext import commands
 
 
-with open("env.yml", "r") as f:
-    try:
-        config = yaml.safe_load(f)
-    except yaml.YAMLError as exc:
-        print(exc)
-        exit(1)
-
-TOKEN = config['TOKEN']
-TIME_ZONE = config['TIME_ZONE']
+TOKEN = os.getenv("TOKEN")
+TIME_ZONE = int(os.getenv("TIME_ZONE"))
 
 intents = discord.Intents.default()
 intents.message_content = True
