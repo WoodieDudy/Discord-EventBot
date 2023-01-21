@@ -1,53 +1,68 @@
-import discord
-from discord.ext import commands
-from config import settings
 import datetime as dt
 
-# bot = commands.Bot(command_prefix=settings['prefix'])
-bot = discord.Client()
+import yaml
+import discord
+from discord.ext import commands
+
+
+with open("env.yml", "r") as f:
+    try:
+        config = yaml.safe_load(f)
+    except yaml.YAMLError as exc:
+        print(exc)
+        exit(1)
+
+TOKEN = config['TOKEN']
+TIME_ZONE = config['TIME_ZONE']
+
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+channels_to_log = {}
+
+
+@bot.command()
+async def loghere(ctx):
+    if ctx.guild is None:
+        return
+    channels_to_log[ctx.guild.id] = ctx.channel.id
+    await ctx.send('Okay. I will log to this channel.')
 
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    time = str((dt.datetime.utcnow() + dt.timedelta(hours=5)).time())[:-7]
+    time = (dt.datetime.utcnow() + dt.timedelta(hours=TIME_ZONE)).time().strftime("%H:%M")
     user = f'**{str(member.display_name)}**'
+    guild_id = member.guild.id
+    if guild_id not in channels_to_log:
+        return
+    channel = bot.get_channel(channels_to_log[guild_id])
 
+    message = None
     if before.channel is None:
-        await bot.get_channel(792288140324634634).send(f'{user} `connect` to {after.channel.name} at {time}')
-    #
-    # elif not before.self_deaf and after.self_deaf:
-    #     await bot.get_channel(792288140324634634).send(f'{user} `turn off` the sound and `mute` at {time}')
-    #
-    # elif before.self_deaf and not after.self_deaf:
-    #     await bot.get_channel(792288140324634634).send(f'{user} `turn on` the sound and `unmute` at {time}')
-    #
-    # elif not before.self_mute and after.self_mute:
-    #     await bot.get_channel(792288140324634634).send(f'{user} `mute` himself at {time}')
-    #
-    # elif before.self_mute and not after.self_mute:
-    #     await bot.get_channel(792288140324634634).send(f'{user} `unmute` himself at {time}')
+        message = f'{user} `connect` to {after.channel.name} at {time}'
 
     elif not before.self_stream and after.self_stream:
-        await bot.get_channel(792288140324634634).send(f'{user} `start stream` at {time}')
+        message = f'{user} `start stream` at {time}'
 
     elif before.self_stream and not after.self_stream:
-        await bot.get_channel(792288140324634634).send(f'{user} `end stream` at {time}')
+        message = f'{user} `end stream` at {time}'
 
     elif not before.self_video and after.self_video:
-        await bot.get_channel(792288140324634634).send(f'{user} `turn on camera` at {time}')
+        message = f'{user} `turn on camera` at {time}'
 
     elif before.self_video and not after.self_video:
-        await bot.get_channel(792288140324634634).send(f'{user} `turn off camera` at {time}')
+        message = f'{user} `turn off camera` at {time}'
 
     elif before.channel is not None and after.channel is not None and after.channel != before.channel:
-        mes = f'{user} `go` from {before.channel.name} to {after.channel.name} at {time}'
-        await bot.get_channel(792288140324634634).send(mes)
+        message = f'{user} `go` from {before.channel.name} to {after.channel.name} at {time}'
 
     elif after.channel is None:
-        await bot.get_channel(792288140324634634).send(f'{user} `leaves` us at {time}')
-    #
-    # else:
-    #     await bot.get_channel(792288140324634634).send(f'{user} do something')
+        message = f'{user} `leaves` us at {time}'
+
+    if message:
+        await channel.send(message)
 
 
-bot.run(settings['token'])
+bot.run(TOKEN)

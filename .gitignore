@@ -125,4 +125,6 @@ dmypy.json
 .pyre/
 idea
 .idea
-config.py
+
+# custom
+env.yml
