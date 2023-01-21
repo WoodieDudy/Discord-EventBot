@@ -3,15 +3,16 @@
 # About
 > EventBot is a simple Discord bot that logs some user activity in channel
 
-## How to use
-We have ensured that your passwords are kept safe, so you must create an application password in order to log in. See the Google [guide](https://support.google.com/accounts/answer/185833?hl=en) for details on how to do this.
-
-You can also use another email service. We're sure that all the popular services also provide this option and have their own guide, we suggest you look it up.
-
 ## Clone the repo
 ```sh
 $ git clone https://github.com/WoodieDudy/Discord-EventBot.git
 $ cd Discord-EventBot
+```
+
+## Fill the env file
+```sh
+$ cp env.yml.example env.yml
+# change token and time zone in env.yml
 ```
 
 ### Running with docker
